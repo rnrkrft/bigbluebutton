@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import Auth from '/imports/ui/services/auth';
 import GuestUsers from '/imports/api/guest-users/';
+import Meetings from '/imports/api/meetings';
 import Service from './service';
 import WaitingComponent from './component';
 
@@ -29,11 +30,14 @@ export default withTracker(() => {
     approved: false,
     denied: false,
   }).fetch();
+  
+  const authenticatedGuest = Meetings.findOne({ meetingId: Auth.meetingID }).usersProp.authenticatedGuest;
 
   return {
     guestUsers,
     authenticatedUsers,
     guestUsersCall: Service.guestUsersCall,
     changeGuestPolicy: Service.changeGuestPolicy,
+    authenticatedGuest,
   };
 })(WaitingContainer);

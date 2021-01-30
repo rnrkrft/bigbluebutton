@@ -24,6 +24,7 @@ import ManyWebcamsNotifier from '/imports/ui/components/video-provider/many-user
 import UploaderContainer from '/imports/ui/components/presentation/presentation-uploader/container';
 import { withDraggableContext } from '../media/webcam-draggable-overlay/context';
 import { styles } from './styles';
+import { makeCall } from '/imports/ui/services/api';
 import { NAVBAR_HEIGHT } from '/imports/ui/components/layout/layout-manager';
 
 const MOBILE_MEDIA = 'only screen and (max-width: 40em)';
@@ -148,6 +149,8 @@ class App extends Component {
 
       startBandwidthMonitoring();
     }
+    
+    if (isMobileBrowser) makeCall('setMobileUser');
 
     logger.info({ logCode: 'app_component_componentdidmount' }, 'Client loaded successfully');
   }

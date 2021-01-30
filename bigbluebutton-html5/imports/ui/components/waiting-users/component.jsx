@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { Session } from 'meteor/session';
 import { defineMessages, injectIntl } from 'react-intl';
@@ -66,7 +67,13 @@ const getNameInitials = (name) => {
   return nameInitials.replace(/^\w/, c => c.toUpperCase());
 }
 
-const renderGuestUserItem = (name, color, handleAccept, handleDeny, role, sequence, userId, avatar, intl) => (
+const getNameInitials = (name) => {
+  const nameInitials = name.slice(0, 2);
+
+  return nameInitials.replace(/^\w/, c => c.toUpperCase());
+}
+
+const renderGuestUserItem = (name, color, handleAccept, handleDeny, role, sequence, userId, intl) => (
   <div key={`userlist-item-${userId}`} className={styles.listItem}>
     <div key={`user-content-container-${userId}`} className={styles.userContentContainer}>
       <div key={`user-avatar-container-${userId}`} className={styles.userAvatar}>
@@ -115,18 +122,22 @@ const renderPendingUsers = (message, usersArray, action, intl) => {
   if (!usersArray.length) return null;
   return (
     <div>
+      <div className={styles.pendingUsers}>
       <p className={styles.mainTitle}>{message}</p>
-      {usersArray.map((user, idx) => renderGuestUserItem(
-        user.name,
-        user.color,
-        () => action([user], ALLOW_STATUS),
-        () => action([user], DENY_STATUS),
-        user.role,
-        idx + 1,
-        user.intId,
-        user.avatar,
-        intl,
-      ))}
+      <div className={styles.usersWrapper}>
+        <div className={styles.users}>
+          {usersArray.map((user, idx) => renderGuestUserItem(
+            user.name,
+            user.color,
+            () => action([user], ALLOW_STATUS),
+            () => action([user], DENY_STATUS),
+            user.role,
+            idx + 1,
+            user.intId,
+            intl,
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
@@ -148,6 +159,7 @@ const WaitingUsers = (props) => {
     guestUsers,
     guestUsersCall,
     changeGuestPolicy,
+    authenticatedGuest,
   } = props;
 
   const onCheckBoxChange = (e) => {
@@ -173,7 +185,7 @@ const WaitingUsers = (props) => {
     />
   );
 
-  const buttonsData = [
+    const authGuestButtonsData = [
     {
       messageId: intlMessages.allowAllAuthenticated,
       action: () => guestUsersCall(authenticatedUsers, ALLOW_STATUS),
@@ -189,6 +201,9 @@ const WaitingUsers = (props) => {
       key: 'allow-all-guest',
       policy: 'ALWAYS_ACCEPT',
     },
+      ];
+
+  const guestButtonsData = [
     {
       messageId: intlMessages.allowEveryone,
       action: () => guestUsersCall([...guestUsers, ...authenticatedUsers], ALLOW_STATUS),
@@ -202,6 +217,8 @@ const WaitingUsers = (props) => {
       policy: 'ALWAYS_DENY',
     },
   ];
+
+  const buttonsData = authenticatedGuest ? _.concat(authGuestButtonsData , guestButtonsData) : guestButtonsData;
 
   return (
     <div
@@ -223,7 +240,7 @@ const WaitingUsers = (props) => {
           />
         </div>
       </header>
-      <main>
+      <div>
         <div>
           <p className={styles.mainTitle}>{intl.formatMessage(intlMessages.optionTitle)}</p>
           {
@@ -239,21 +256,21 @@ const WaitingUsers = (props) => {
             {intl.formatMessage(intlMessages.rememberChoice)}
           </label>
         </div>
-        {renderPendingUsers(
-          intl.formatMessage(intlMessages.pendingUsers,
-            { 0: authenticatedUsers.length }),
-          authenticatedUsers,
-          guestUsersCall,
-          intl,
-        )}
-        {renderPendingUsers(
-          intl.formatMessage(intlMessages.pendingGuestUsers,
-            { 0: guestUsers.length }),
-          guestUsers,
-          guestUsersCall,
-          intl,
-        )}
-      </main>
+      </div>
+      {renderPendingUsers(
+        intl.formatMessage(intlMessages.pendingUsers,
+          { 0: authenticatedUsers.length }),
+        authenticatedUsers,
+        guestUsersCall,
+        intl,
+      )}
+      {renderPendingUsers(
+        intl.formatMessage(intlMessages.pendingGuestUsers,
+          { 0: guestUsers.length }),
+        guestUsers,
+        guestUsersCall,
+        intl,
+      )}
     </div>
   );
 };
